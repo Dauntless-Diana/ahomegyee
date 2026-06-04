@@ -474,25 +474,25 @@
 </header>
 
 <div id="home">
-  <button class="main-btn meditate" onclick="open('meditate')">
+  <button class="main-btn meditate" onclick="showSection('meditate')">
     <span class="btn-emoji">🧘🏾‍♀️</span>
     <span class="btn-label">Asomdwoe</span>
     <span class="btn-sub">Guided<br>Meditation</span>
   </button>
 
-  <button class="main-btn stories" onclick="open('stories')">
+  <button class="main-btn stories" onclick="showSection('stories')">
     <span class="btn-emoji">📖</span>
     <span class="btn-label">Anansesɛm</span>
     <span class="btn-sub">Bedtime<br>Stories</span>
   </button>
 
-  <button class="main-btn sleep" onclick="open('sleep')">
+  <button class="main-btn sleep" onclick="showSection('sleep')">
     <span class="btn-emoji">😴</span>
     <span class="btn-label">Ngyegyeɛ</span>
     <span class="btn-sub">Sleep<br>Sounds</span>
   </button>
 
-  <button class="main-btn breathe" onclick="open('breathe')">
+  <button class="main-btn breathe" onclick="showSection('breathe')">
     <span class="btn-emoji">🌬️</span>
     <span class="btn-label">Ahome</span>
     <span class="btn-sub">Breathing<br>Exercise</span>
@@ -748,7 +748,7 @@
 /* ── Navigation ── */
 let currentSection = null;
 
-function open(section) {
+function showSection(section) {
   document.getElementById('home').style.display = 'none';
   document.querySelector('header').style.display = 'none';
   document.getElementById(section + '-screen').classList.add('active');
@@ -853,7 +853,7 @@ function playItem(cat, title, sub, art, twi, dur) {
   // Show player
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('player-screen').classList.add('active');
-  document.getElementById('playerBack').onclick = () => open(cat);
+  document.getElementById('playerBack').onclick = () => showSection(cat);
 
   // Fill metadata
   document.getElementById('playerCategory').textContent = catLabel[cat] || cat;
