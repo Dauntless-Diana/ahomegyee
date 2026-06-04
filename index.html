@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="ak">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ahomegyeɛ – Wo Ahotɔ App</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0d1117" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Ahomegyeɛ" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d1117;
+      --surface:   #161b22;
+      --card:      #1c2230;
+      --gold:      #f5a623;
+      --teal:      #3ecfb2;
+      --lavender:  #a78bfa;
+      --rose:      #fb7185;
+      --text:      #e6edf3;
+      --muted:     #8b949e;
+      --radius:    24px;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    /* ── Stars background ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 30%, rgba(167,139,250,.12) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 70%, rgba(62,207,178,.10) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Header ── */
+    header {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 36px 20px 12px;
+    }
+
+    .app-icon { font-size: 3.5rem; line-height: 1; }
+
+    header h1 {
+      font-size: clamp(1.6rem, 5vw, 2.4rem);
+      font-weight: 800;
+      letter-spacing: -.5px;
+      background: linear-gradient(135deg, var(--gold), var(--teal));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 8px 0 4px;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    /* ── Home screen ── */
+    #home {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      padding: 28px 20px 40px;
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .main-btn {
+      background: var(--card);
+      border: 1.5px solid rgba(255,255,255,.07);
+      border-radius: var(--radius);
+      padding: 28px 16px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      transition: transform .18s, border-color .18s, box-shadow .18s;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .main-btn:active { transform: scale(.95); }
+
+    .main-btn:hover {
+      border-color: var(--accent, var(--gold));
+      box-shadow: 0 0 32px -8px var(--accent, var(--gold));
+    }
+
+    .main-btn.meditate { --accent: var(--teal); }
+    .main-btn.stories  { --accent: var(--gold); }
+    .main-btn.sleep    { --accent: var(--lavender); }
+    .main-btn.breathe  { --accent: var(--rose); }
+
+    .btn-emoji { font-size: 3.4rem; line-height: 1; }
+
+    .btn-label {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent, var(--text));
+    }
+
+    .btn-sub {
+      font-size: .78rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    /* ── Screens (sections) ── */
+    .screen {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 10;
+      flex-direction: column;
+      align-items: center;
+      overflow-y: auto;
+    }
+
+    .screen.active { display: flex; }
+
+    .screen-header {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 20px 0;
+    }
+
+    .back-btn {
+      background: var(--card);
+      border: 1.5px solid rgba(255,255,255,.07);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      transition: background .15s;
+    }
+
+    .back-btn:hover { background: var(--surface); }
+
+    .screen-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+    }
+
+    /* ── Item list ── */
+    .item-list {
+      width: 100%;
+      max-width: 480px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .item-card {
+      background: var(--card);
+      border: 1.5px solid rgba(255,255,255,.07);
+      border-radius: 18px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: transform .15s, border-color .15s;
+    }
+
+    .item-card:active { transform: scale(.97); }
+    .item-card:hover  { border-color: var(--accent, var(--teal)); }
+
+    .item-emoji { font-size: 2.4rem; flex-shrink: 0; }
+
+    .item-info { flex: 1; }
+
+    .item-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+
+    .item-desc {
+      font-size: .82rem;
+      color: var(--muted);
+    }
+
+    .item-dur {
+      font-size: .8rem;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    /* ── Player screen ── */
+    #player-screen {
+      background: var(--bg);
+    }
+
+    .player-art {
+      font-size: 7rem;
+      margin: 32px 0 20px;
+      line-height: 1;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-12px); }
+    }
+
+    .player-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      text-align: center;
+      padding: 0 24px;
+      margin-bottom: 6px;
+    }
+
+    .player-sub {
+      font-size: .9rem;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    /* ── Twi text box ── */
+    .twi-box {
+      background: var(--card);
+      border: 1.5px solid rgba(255,255,255,.07);
+      border-radius: 18px;
+      padding: 18px 22px;
+      width: 100%;
+      max-width: 440px;
+      margin: 0 20px 28px;
+      font-size: .92rem;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    .twi-box .label {
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .twi-highlight { color: var(--gold); font-weight: 600; }
+
+    /* ── Progress bar ── */
+    .progress-wrap {
+      width: 100%;
+      max-width: 440px;
+      padding: 0 20px;
+    }
+
+    .progress-bar-bg {
+      background: var(--surface);
+      border-radius: 99px;
+      height: 6px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--teal), var(--lavender));
+      width: 0%;
+      transition: width .5s linear;
+    }
+
+    .progress-times {
+      display: flex;
+      justify-content: space-between;
+      font-size: .78rem;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    /* ── Playback controls ── */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 36px;
+    }
+
+    .ctrl-btn {
+      background: var(--card);
+      border: 1.5px solid rgba(255,255,255,.07);
+      border-radius: 50%;
+      width: 56px;
+      height: 56px;
+      font-size: 1.4rem;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      transition: transform .15s, background .15s;
+    }
+
+    .ctrl-btn:active { transform: scale(.9); }
+    .ctrl-btn:hover  { background: var(--surface); }
+
+    .play-btn {
+      width: 76px;
+      height: 76px;
+      font-size: 2rem;
+      background: linear-gradient(135deg, var(--teal), var(--lavender));
+      border: none;
+      box-shadow: 0 8px 24px -6px rgba(62,207,178,.5);
+    }
+
+    .play-btn:hover { background: linear-gradient(135deg, #2db89f, #8b6ff0); }
+
+    /* ── Breathing exercise ── */
+    #breathe-screen .player-art { animation: none; }
+
+    .breath-circle {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(251,113,133,.4) 0%, rgba(251,113,133,.05) 70%);
+      border: 2.5px solid var(--rose);
+      display: grid;
+      place-items: center;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--rose);
+      margin: 20px auto 32px;
+      transition: transform 4s ease-in-out;
+    }
+
+    .breath-circle.inhale  { transform: scale(1.35); }
+    .breath-circle.exhale  { transform: scale(1); }
+    .breath-circle.hold    { transform: scale(1.35); }
+
+    .breath-phase {
+      font-size: 1.5rem;
+      font-weight: 800;
+      text-align: center;
+      color: var(--rose);
+      margin-bottom: 8px;
+    }
+
+    .breath-twi {
+      font-size: 1rem;
+      color: var(--muted);
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    /* ── Sleep timer ── */
+    .timer-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .timer-btn {
+      background: var(--card);
+      border: 1.5px solid rgba(255,255,255,.07);
+      border-radius: 99px;
+      padding: 10px 20px;
+      font-size: .9rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+    }
+
+    .timer-btn:hover, .timer-btn.active {
+      border-color: var(--lavender);
+      background: rgba(167,139,250,.12);
+      color: var(--lavender);
+    }
+
+    /* ── Volume ── */
+    .volume-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      max-width: 440px;
+      padding: 0 20px;
+      margin-bottom: 20px;
+    }
+
+    .volume-row span { font-size: 1.2rem; }
+
+    input[type=range] {
+      flex: 1;
+      accent-color: var(--teal);
+      height: 4px;
+    }
+
+    /* ── Ambient sound pills ── */
+    .ambient-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 0 20px;
+      margin-bottom: 28px;
+    }
+
+    .ambient-pill {
+      background: var(--card);
+      border: 1.5px solid rgba(255,255,255,.07);
+      border-radius: 99px;
+      padding: 8px 16px;
+      font-size: .85rem;
+      cursor: pointer;
+      transition: border-color .15s, color .15s;
+      color: var(--muted);
+    }
+
+    .ambient-pill:hover, .ambient-pill.on {
+      border-color: var(--teal);
+      color: var(--teal);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 360px) {
+      #home { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     HOME
+══════════════════════════════════ -->
+<header>
+  <div class="app-icon">🌙</div>
+  <h1>Ahomegyeɛ</h1>
+  <p>Wo ahotɔ, wo dwo</p>
+</header>
+
+<div id="home">
+  <button class="main-btn meditate" onclick="open('meditate')">
+    <span class="btn-emoji">🧘🏾‍♀️</span>
+    <span class="btn-label">Asomdwoe</span>
+    <span class="btn-sub">Guided<br>Meditation</span>
+  </button>
+
+  <button class="main-btn stories" onclick="open('stories')">
+    <span class="btn-emoji">📖</span>
+    <span class="btn-label">Anansesɛm</span>
+    <span class="btn-sub">Bedtime<br>Stories</span>
+  </button>
+
+  <button class="main-btn sleep" onclick="open('sleep')">
+    <span class="btn-emoji">😴</span>
+    <span class="btn-label">Ngyegyeɛ</span>
+    <span class="btn-sub">Sleep<br>Sounds</span>
+  </button>
+
+  <button class="main-btn breathe" onclick="open('breathe')">
+    <span class="btn-emoji">🌬️</span>
+    <span class="btn-label">Ahome</span>
+    <span class="btn-sub">Breathing<br>Exercise</span>
+  </button>
+</div>
+
+
+<!-- ══════════════════════════════════
+     MEDITATION SCREEN
+══════════════════════════════════ -->
+<div class="screen" id="meditate-screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goHome()">←</button>
+    <span class="screen-title">🧘🏾‍♀️ Ahotɔpɛ</span>
+  </div>
+  <div class="item-list">
+    <div class="item-card" style="--accent:var(--teal)"
+         onclick="playItem('meditate','Owia Ber Da','Afenhyia Da – Morning Peace','🌅','Hwehwɛ w\'ahotɔ wɔ saa owia a ekyene yi. Fa w\'ani to wo ho. Ahome fɛfɛ…','5:00')">
+      <span class="item-emoji">🌅</span>
+      <div class="item-info">
+        <div class="item-title">Owia Ber Da</div>
+        <div class="item-desc">Morning peace – Afenhyia Da</div>
+      </div>
+      <span class="item-dur">5 min</span>
+    </div>
+
+    <div class="item-card" style="--accent:var(--teal)"
+         onclick="playItem('meditate','Dwo Dwo','Calm your body – Wo honam so','🌿','Dwo wo ho. Dwo wo ho. W\'ahome na ɛkɔ. W\'ahome na ɛba. Wo ho dwo sɛ asuo a ɛtow.','10:00')">
+      <span class="item-emoji">🌿</span>
+      <div class="item-info">
+        <div class="item-title">Dwo Dwo</div>
+        <div class="item-desc">Body scan – Wo honam so</div>
+      </div>
+      <span class="item-dur">10 min</span>
+    </div>
+
+    <div class="item-card" style="--accent:var(--teal)"
+         onclick="playItem('meditate','Akoma Dwo','Peaceful heart – Akoma mu','❤️','Fa w\'akoma ato dwo. Gyae w\'adwene tom. Onyame te wo ho daakye. Wo ho ye.','7:00')">
+      <span class="item-emoji">❤️</span>
+      <div class="item-info">
+        <div class="item-title">Akoma Dwo</div>
+        <div class="item-desc">Peaceful heart – Akoma mu ahotɔ</div>
+      </div>
+      <span class="item-dur">7 min</span>
+    </div>
+
+    <div class="item-card" style="--accent:var(--teal)"
+         onclick="playItem('meditate','Adekyee Mu','Gratitude – Wɔ Adekyee Mu','🙏🏾','Wɔ saa adekyee yi, fa w\'akyi kyerɛ Onyame. Ɔmo no ama wo nkwa. Ɔmo no ama wo akoma sɛ ɛte. Da no ase.','8:00')">
+      <span class="item-emoji">🙏🏾</span>
+      <div class="item-info">
+        <div class="item-title">Adekyee Mu</div>
+        <div class="item-desc">Gratitude – Da Onyame ase</div>
+      </div>
+      <span class="item-dur">8 min</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     STORIES SCREEN
+══════════════════════════════════ -->
+<div class="screen" id="stories-screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goHome()">←</button>
+    <span class="screen-title">📖 Anansesɛm</span>
+  </div>
+  <div class="item-list">
+    <div class="item-card" style="--accent:var(--gold)"
+         onclick="playItem('stories','Kweku Ananse Ne Nyankopɔn','Ananse and the Sky God','🕷️','Amaneɛ bi wɔ hɔ a edidi sɛ: Tete na wobubuiɛ, na woamma ananse anka anansesɛm. Ananse na okoɔ Nyankopɔn nkyɛn de nʼaba ne nʼadwene bɛto nko asi ho nyinaa…','12:00')">
+      <span class="item-emoji">🕷️</span>
+      <div class="item-info">
+        <div class="item-title">Ananse ne Nyankopɔn</div>
+        <div class="item-desc">Ananse and the Sky God</div>
+      </div>
+      <span class="item-dur">12 min</span>
+    </div>
+
+    <div class="item-card" style="--accent:var(--gold)"
+         onclick="playItem('stories','Aberewa ne Nkwadaa','The wise grandmother','👵🏾','Ɛberɛ bi wɔ hɔ a aberewa bi te kuropɔn bi mu a ɔwɔ nkwadaa pii. Ɔde ɔdɔ yɛɛ won nyinaa yie, ɔde nyansa kyerɛɛ won kwan…','15:00')">
+      <span class="item-emoji">👵🏾</span>
+      <div class="item-info">
+        <div class="item-title">Aberewa ne Nkwadaa</div>
+        <div class="item-desc">The wise grandmother</div>
+      </div>
+      <span class="item-dur">15 min</span>
+    </div>
+
+    <div class="item-card" style="--accent:var(--gold)"
+         onclick="playItem('stories','Adwoa ne Asuo','The river\'s gift','🌊','Ɛberɛ bi wɔ hɔ a ɔbaa bi a wɔfrɛ no Adwoa na ɔkɔɔ nsuo ho. Asuo no soo no nʼahome a, na asuo no kaa kyerɛɛ no sɛ: "Wo akoma yɛ fɛ, menkyɛ wo mpɔ bi…"','10:00')">
+      <span class="item-emoji">🌊</span>
+      <div class="item-info">
+        <div class="item-title">Adwoa ne Asuo</div>
+        <div class="item-desc">The river's gift</div>
+      </div>
+      <span class="item-dur">10 min</span>
+    </div>
+
+    <div class="item-card" style="--accent:var(--gold)"
+         onclick="playItem('stories','Ananseɛ Nhyiamu','Ananse\'s big meeting','🌳','Ananse bɔɔ mmre ma mmoa nyinaa sɛ wɔmma nhyiamu. Wɔkɔɔ atenae mu, na wɔhyiaa wɔ nnua kɛsɛ bi ase. Wɔmm mmoa biara angu hɔ…','18:00')">
+      <span class="item-emoji">🌳</span>
+      <div class="item-info">
+        <div class="item-title">Ananseɛ Nhyiamu</div>
+        <div class="item-desc">Ananse's big meeting</div>
+      </div>
+      <span class="item-dur">18 min</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     SLEEP SCREEN
+══════════════════════════════════ -->
+<div class="screen" id="sleep-screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goHome()">←</button>
+    <span class="screen-title">😴 Awo Da</span>
+  </div>
+  <div class="item-list">
+    <div class="item-card" style="--accent:var(--lavender)"
+         onclick="playItem('sleep','Ɔsoo Mu','Rain sounds – Ɔsoo mu','🌧️','Tie saa ɔsoo a ɛtow no. Fa wo ho tom ase. Da wo ho ase, dwo wo ho, na da koko.','—')">
+      <span class="item-emoji">🌧️</span>
+      <div class="item-info">
+        <div class="item-title">Ɔsoo Mu</div>
+        <div class="item-desc">Gentle rain – Ahom dwo</div>
+      </div>
+      <span class="item-dur">∞</span>
+    </div>
+
+    <div class="item-card" style="--accent:var(--lavender)"
+         onclick="playItem('sleep','Kwaeɛ Mu','Forest sounds – Aburokyiri','🌲','Tie mmoa a wɔwɔ kwaeɛ mu no huu. Ɔsramatwa a ɛto mframa mu. Dwo wo ho na da.','—')">
+      <span class="item-emoji">🌲</span>
+      <div class="item-info">
+        <div class="item-title">Kwaeɛ Mu</div>
+        <div class="item-desc">Forest sounds – Mmoa ne mframa</div>
+      </div>
+      <span class="item-dur">∞</span>
+    </div>
+
+    <div class="item-card" style="--accent:var(--lavender)"
+         onclick="playItem('sleep','Epow Mu','Ocean waves – Epow','🌊','Epow no tom na ɛba, tom na ɛkɔ. Saa ahom yi na eye w\'akoma ama eda so kɔ.','—')">
+      <span class="item-emoji">🌊</span>
+      <div class="item-info">
+        <div class="item-title">Epow Mu</div>
+        <div class="item-desc">Ocean waves – Dwo dwo</div>
+      </div>
+      <span class="item-dur">∞</span>
+    </div>
+
+    <div class="item-card" style="--accent:var(--lavender)"
+         onclick="playItem('sleep','Anadwo Nhwɛ','Night lullaby – Nnwonkoro','🌙','Mema wo anadwo pa, mema wo da pa. Onyame nna wo ho anadwo yi. Dwo wo ho, dwo wo ho…','20:00')">
+      <span class="item-emoji">🌙</span>
+      <div class="item-info">
+        <div class="item-title">Anadwo Nhwɛ</div>
+        <div class="item-desc">Twi lullaby – Nnwonkoro</div>
+      </div>
+      <span class="item-dur">20 min</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     BREATHING SCREEN
+══════════════════════════════════ -->
+<div class="screen" id="breathe-screen">
+  <div class="screen-header">
+    <button class="back-btn" onclick="goHome()">←</button>
+    <span class="screen-title">🌬️ Ahome</span>
+  </div>
+
+  <div class="breath-circle" id="breathCircle">
+    <span id="breathCount">4</span>
+  </div>
+
+  <div class="breath-phase" id="breathPhase">Tie w'ahome</div>
+  <div class="breath-twi" id="breathTwi">Bra, yɛn hyɛ ase</div>
+
+  <div class="controls" style="margin-top:0">
+    <button class="ctrl-btn" onclick="toggleBreathe()" id="breathPlayBtn" style="width:76px;height:76px;font-size:2rem;background:linear-gradient(135deg,var(--rose),var(--lavender));border:none;box-shadow:0 8px 24px -6px rgba(251,113,133,.45)">▶</button>
+  </div>
+
+  <div class="twi-box" style="max-width:440px;margin:0 20px 32px">
+    <div class="label">Nhyɛ kwan – How it works</div>
+    <b>Fa w'ahome</b> – <span style="color:var(--muted)">Inhale 4s</span><br>
+    <b>Kora</b> – <span style="color:var(--muted)">Hold 4s</span><br>
+    <b>Yi w'ahome</b> – <span style="color:var(--muted)">Exhale 4s</span><br>
+    <b>Brɛ</b> – <span style="color:var(--muted)">Rest 4s</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     PLAYER SCREEN
+══════════════════════════════════ -->
+<div class="screen" id="player-screen">
+  <div class="screen-header" style="max-width:480px">
+    <button class="back-btn" id="playerBack">←</button>
+    <span class="screen-title" id="playerCategory">Ahotɔpɛ</span>
+  </div>
+
+  <div class="player-art" id="playerArt">🌅</div>
+  <div class="player-title" id="playerTitle">Owia Ber Da</div>
+  <div class="player-sub"  id="playerSub">Morning peace</div>
+
+  <div class="twi-box">
+    <div class="label">Akan Twi</div>
+    <span id="twiText">Hwehwɛ w'ahotɔ wɔ saa owia a ekyene yi…</span>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-times">
+      <span id="timeNow">0:00</span>
+      <span id="timeEnd">0:00</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl-btn" onclick="skipBack()">⏮</button>
+    <button class="ctrl-btn play-btn" id="playPauseBtn" onclick="togglePlay()">▶</button>
+    <button class="ctrl-btn" onclick="skipFwd()">⏭</button>
+  </div>
+
+  <div class="volume-row">
+    <span>🔇</span>
+    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.8" oninput="setVolume(this.value)">
+    <span>🔊</span>
+  </div>
+
+  <div class="ambient-row" id="ambientRow">
+    <div class="ambient-pill" onclick="toggleAmbient(this,'rain')">🌧️ Rain</div>
+    <div class="ambient-pill" onclick="toggleAmbient(this,'forest')">🌲 Forest</div>
+    <div class="ambient-pill" onclick="toggleAmbient(this,'ocean')">🌊 Ocean</div>
+    <div class="ambient-pill" onclick="toggleAmbient(this,'night')">🦗 Night</div>
+  </div>
+
+  <div class="timer-row" id="timerRow">
+    <div class="timer-btn" onclick="setSleepTimer(15,this)">15 min</div>
+    <div class="timer-btn" onclick="setSleepTimer(30,this)">30 min</div>
+    <div class="timer-btn" onclick="setSleepTimer(60,this)">1 hr</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     JavaScript
+══════════════════════════════════ -->
+<script>
+/* ── Navigation ── */
+let currentSection = null;
+
+function open(section) {
+  document.getElementById('home').style.display = 'none';
+  document.querySelector('header').style.display = 'none';
+  document.getElementById(section + '-screen').classList.add('active');
+  currentSection = section;
+}
+
+function goHome() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('home').style.display = '';
+  document.querySelector('header').style.display = '';
+  stopAll();
+  currentSection = null;
+}
+
+/* ── Audio engine (Web Audio API for ambient, HTMLAudio for main) ── */
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+// Ambient tone generators
+const ambientNodes = {};
+const ambientColors = { rain: '#56ccf2', forest: '#6fcf97', ocean: '#2d9cdb', night: '#9b51e0' };
+
+function makeNoise(type) {
+  const bufSize = audioCtx.sampleRate * 2;
+  const buf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+  for (let i = 0; i < bufSize; i++) {
+    const white = Math.random() * 2 - 1;
+    if (type === 'rain') {
+      // pink-ish noise
+      b0 = 0.99886*b0 + white*0.0555179; b1 = 0.99332*b1 + white*0.0750759;
+      b2 = 0.96900*b2 + white*0.1538520; b3 = 0.86650*b3 + white*0.3104856;
+      b4 = 0.55000*b4 + white*0.5329522; b5 = -0.7616*b5 - white*0.0168980;
+      data[i] = (b0+b1+b2+b3+b4+b5+b6 + white*0.5362) / 9 * 0.6;
+      b6 = white * 0.115926;
+    } else if (type === 'ocean') {
+      data[i] = white * 0.5;
+    } else if (type === 'forest') {
+      data[i] = white * 0.3;
+    } else {
+      data[i] = white * 0.15;
+    }
+  }
+  const src = audioCtx.createBufferSource();
+  src.buffer = buf;
+  src.loop = true;
+  const gain = audioCtx.createGain();
+  gain.gain.value = 0;
+  src.connect(gain);
+
+  // Filter shaping per type
+  const filt = audioCtx.createBiquadFilter();
+  if (type === 'ocean') {
+    filt.type = 'lowpass'; filt.frequency.value = 400;
+    // slow LFO for wave rhythm
+    const lfo = audioCtx.createOscillator();
+    const lfoGain = audioCtx.createGain();
+    lfo.frequency.value = 0.08; lfoGain.gain.value = 200;
+    lfo.connect(lfoGain); lfoGain.connect(filt.frequency);
+    lfo.start();
+  } else if (type === 'rain') {
+    filt.type = 'highpass'; filt.frequency.value = 800;
+  } else if (type === 'forest') {
+    filt.type = 'bandpass'; filt.frequency.value = 800; filt.Q.value = 0.5;
+  } else {
+    filt.type = 'bandpass'; filt.frequency.value = 2000; filt.Q.value = 2;
+  }
+  src.connect(filt);
+  filt.connect(gain);
+  gain.connect(audioCtx.destination);
+  src.start();
+  return { src, gain };
+}
+
+function toggleAmbient(el, type) {
+  audioCtx.resume();
+  el.classList.toggle('on');
+  if (el.classList.contains('on')) {
+    const node = makeNoise(type);
+    ambientNodes[type] = node;
+    node.gain.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + 1);
+  } else {
+    const node = ambientNodes[type];
+    if (node) {
+      node.gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1);
+      setTimeout(() => node.src.stop(), 1200);
+      delete ambientNodes[type];
+    }
+  }
+}
+
+/* ── Main player (uses speech synthesis for Twi narration) ── */
+let playing = false;
+let elapsed = 0;
+let totalSec = 0;
+let ticker = null;
+let utterance = null;
+
+const catLabel = { meditate: '🧘🏾‍♀️ Ahotɔpɛ', stories: '📖 Anansesɛm', sleep: '😴 Awo Da' };
+
+function playItem(cat, title, sub, art, twi, dur) {
+  // Show player
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('player-screen').classList.add('active');
+  document.getElementById('playerBack').onclick = () => open(cat);
+
+  // Fill metadata
+  document.getElementById('playerCategory').textContent = catLabel[cat] || cat;
+  document.getElementById('playerTitle').textContent = title;
+  document.getElementById('playerSub').textContent = sub;
+  document.getElementById('playerArt').textContent = art;
+  document.getElementById('twiText').textContent = twi;
+
+  // Parse duration
+  if (dur === '—') { totalSec = 0; }
+  else {
+    const [m, s] = dur.split(':').map(Number);
+    totalSec = m * 60 + (s || 0);
+  }
+  elapsed = 0;
+  document.getElementById('timeEnd').textContent = fmtTime(totalSec);
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('timeNow').textContent = '0:00';
+  document.getElementById('playPauseBtn').textContent = '▶';
+  playing = false;
+
+  // Start speech
+  startSpeech(twi);
+}
+
+function startSpeech(text) {
+  if (!('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  utterance = new SpeechSynthesisUtterance(text);
+
+  // Try to find a Ghanaian / African / any en-GH voice; fallback gracefully
+  const voices = window.speechSynthesis.getVoices();
+  const preferred = voices.find(v => v.lang.startsWith('ak') || v.lang === 'en-GH')
+    || voices.find(v => v.lang.startsWith('en-'))
+    || voices[0];
+  if (preferred) utterance.voice = preferred;
+  utterance.rate = 0.82;
+  utterance.pitch = 1.05;
+  utterance.volume = document.getElementById('volumeSlider').value;
+  // Auto-play when user presses play
+}
+
+function togglePlay() {
+  audioCtx.resume();
+  if (playing) {
+    playing = false;
+    clearInterval(ticker);
+    document.getElementById('playPauseBtn').textContent = '▶';
+    window.speechSynthesis.pause();
+  } else {
+    playing = true;
+    document.getElementById('playPauseBtn').textContent = '⏸';
+    if (window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+    } else if (utterance) {
+      window.speechSynthesis.speak(utterance);
+    }
+    if (totalSec > 0) {
+      ticker = setInterval(() => {
+        elapsed++;
+        if (elapsed >= totalSec) { clearInterval(ticker); elapsed = totalSec; playing = false; document.getElementById('playPauseBtn').textContent = '▶'; }
+        document.getElementById('progressFill').style.width = (elapsed / totalSec * 100) + '%';
+        document.getElementById('timeNow').textContent = fmtTime(elapsed);
+      }, 1000);
+    }
+  }
+}
+
+function skipBack() { elapsed = Math.max(0, elapsed - 15); document.getElementById('timeNow').textContent = fmtTime(elapsed); }
+function skipFwd()  { elapsed = Math.min(totalSec || elapsed + 15, elapsed + 15); document.getElementById('timeNow').textContent = fmtTime(elapsed); }
+
+function setVolume(v) {
+  if (utterance) utterance.volume = parseFloat(v);
+  Object.values(ambientNodes).forEach(n => n.gain.gain.value = parseFloat(v) * 0.3);
+}
+
+function fmtTime(s) {
+  const m = Math.floor(s / 60);
+  const ss = String(s % 60).padStart(2, '0');
+  return m + ':' + ss;
+}
+
+function stopAll() {
+  playing = false;
+  clearInterval(ticker);
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  Object.keys(ambientNodes).forEach(k => {
+    ambientNodes[k].gain.gain.value = 0;
+    setTimeout(() => ambientNodes[k].src.stop(), 200);
+    delete ambientNodes[k];
+  });
+  document.querySelectorAll('.ambient-pill.on').forEach(p => p.classList.remove('on'));
+}
+
+/* ── Sleep timer ── */
+let sleepTimer = null;
+function setSleepTimer(mins, el) {
+  clearTimeout(sleepTimer);
+  document.querySelectorAll('.timer-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  sleepTimer = setTimeout(() => { stopAll(); goHome(); }, mins * 60000);
+}
+
+/* ── Breathing exercise ── */
+const phases = [
+  { name: 'Fa w\'ahome', twi: 'Sɔ w\'ahome…', cls: 'inhale', dur: 4000 },
+  { name: 'Kora',        twi: 'Kora… kora…', cls: 'hold',   dur: 4000 },
+  { name: 'Yi w\'ahome', twi: 'Yi w\'ahome…', cls: 'exhale', dur: 4000 },
+  { name: 'Brɛ',         twi: 'Brɛ wo ho…',  cls: 'exhale', dur: 4000 },
+];
+let breathIdx = 0;
+let breathRunning = false;
+let breathInterval = null;
+let breathCount = 4;
+let breathCountInterval = null;
+
+function toggleBreathe() {
+  if (breathRunning) {
+    breathRunning = false;
+    clearTimeout(breathInterval);
+    clearInterval(breathCountInterval);
+    document.getElementById('breathPlayBtn').textContent = '▶';
+    document.getElementById('breathPhase').textContent = 'Tie w\'ahome';
+    document.getElementById('breathTwi').textContent = 'Bra, yɛn hyɛ ase';
+    const c = document.getElementById('breathCircle');
+    c.className = 'breath-circle';
+    document.getElementById('breathCount').textContent = '4';
+  } else {
+    breathRunning = true;
+    document.getElementById('breathPlayBtn').textContent = '⏹';
+    breathIdx = 0;
+    runBreathPhase();
+  }
+}
+
+function runBreathPhase() {
+  if (!breathRunning) return;
+  const p = phases[breathIdx % phases.length];
+  document.getElementById('breathPhase').textContent = p.name;
+  document.getElementById('breathTwi').textContent = p.twi;
+  const c = document.getElementById('breathCircle');
+  c.className = 'breath-circle ' + p.cls;
+
+  // Countdown
+  let cnt = p.dur / 1000;
+  document.getElementById('breathCount').textContent = cnt;
+  clearInterval(breathCountInterval);
+  breathCountInterval = setInterval(() => {
+    cnt--;
+    document.getElementById('breathCount').textContent = Math.max(0, cnt);
+  }, 1000);
+
+  breathInterval = setTimeout(() => {
+    breathIdx++;
+    runBreathPhase();
+  }, p.dur);
+}
+
+// Load voices async (some browsers need this)
+window.speechSynthesis && window.speechSynthesis.getVoices();
+window.speechSynthesis && (window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices());
+
+// Register service worker for offline / installable PWA
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}
+</script>
+</body>
+</html>
